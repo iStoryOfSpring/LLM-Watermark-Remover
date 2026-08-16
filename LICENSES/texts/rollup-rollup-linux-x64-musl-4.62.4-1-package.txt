@@ -1,0 +1,2 @@
+License metadata: MIT
+Package: @rollup/rollup-linux-x64-musl

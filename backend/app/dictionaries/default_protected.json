@@ -1,0 +1,178 @@
+{
+  "version": "0.1.0",
+  "description": "Conservative starter dictionary for a document-faithful Chinese lexical rewriter.",
+  "sources": [
+    {
+      "name": "jieba",
+      "url": "https://github.com/fxsjy/jieba",
+      "purpose": "segmentation and POS interface conventions"
+    },
+    {
+      "name": "HanLP",
+      "url": "https://github.com/hankcs/HanLP",
+      "purpose": "NLP pipeline and named-entity boundary conventions"
+    },
+    {
+      "name": "Baidu LAC",
+      "url": "https://github.com/baidu/lac",
+      "purpose": "lexical analysis and entity-label conventions"
+    }
+  ],
+  "protected_terms": [
+    "Qwen3.5-2B",
+    "Qwen3.5",
+    "Qwen",
+    "DeepSeek",
+    "ChatGPT",
+    "OpenAI",
+    "Transformers",
+    "FastAPI",
+    "React",
+    "Python",
+    "Logistic Regression",
+    "Random Forest",
+    "随机森林",
+    "支持向量机",
+    "卷积神经网络",
+    "循环神经网络",
+    "神经网络",
+    "机器学习",
+    "深度学习",
+    "自然语言处理",
+    "大语言模型",
+    "营业收入",
+    "营业成本",
+    "净利润",
+    "现金流量表",
+    "资产负债表",
+    "武汉纺织大学",
+    "长江环保集团"
+  ],
+  "risk_terms": {
+    "NEGATION": ["不", "未", "无", "没有", "并非", "尚未", "不得", "不能", "不一定"],
+    "MODALITY": ["必须", "禁止", "可能", "或许", "一定", "应当", "应该"],
+    "LOGIC": ["因此", "所以", "由于", "导致", "造成", "但是", "然而", "同时", "唯一", "全部", "部分", "主要", "显著", "相关"]
+  },
+  "safe_replacements": [
+    {
+      "text": "较大程度上",
+      "pos": "d",
+      "replacements": ["很大程度上"],
+      "reason": "高置信同义替换"
+    },
+    {
+      "text": "能够",
+      "pos": "v",
+      "replacements": ["可以"],
+      "reason": "高置信同义替换"
+    },
+    {
+      "text": "较为",
+      "pos": "d",
+      "replacements": ["比较"],
+      "reason": "高置信同义替换"
+    },
+    {
+      "text": "此外",
+      "pos": "d",
+      "replacements": ["另外"],
+      "reason": "高置信同义替换"
+    },
+    {
+      "text": "进行分析",
+      "pos": "v",
+      "replacements": ["加以分析"],
+      "reason": "固定表达替换"
+    },
+    {
+      "text": "有利于",
+      "pos": "v",
+      "replacements": ["有助于"],
+      "reason": "高置信同义替换"
+    },
+    {
+      "text": "便于",
+      "pos": "v",
+      "replacements": ["方便"],
+      "reason": "高置信同义替换"
+    },
+    {
+      "text": "用于",
+      "pos": "p",
+      "replacements": ["用来"],
+      "reason": "高置信同义替换"
+    },
+    {
+      "text": "例如",
+      "pos": "d",
+      "replacements": ["比如"],
+      "reason": "高置信同义替换"
+    },
+    {
+      "text": "通常",
+      "pos": "d",
+      "replacements": ["一般"],
+      "reason": "高置信同义替换"
+    },
+    {
+      "text": "一般地",
+      "pos": "d",
+      "replacements": ["通常"],
+      "reason": "高置信同义替换"
+    },
+    {
+      "text": "目前",
+      "pos": "t",
+      "replacements": ["当前"],
+      "reason": "高置信同义替换"
+    },
+    {
+      "text": "已经",
+      "pos": "d",
+      "replacements": ["已"],
+      "reason": "高置信同义替换"
+    },
+    {
+      "text": "仍然",
+      "pos": "d",
+      "replacements": ["仍"],
+      "reason": "高置信同义替换"
+    },
+    {
+      "text": "进行整理",
+      "pos": "v",
+      "replacements": ["加以整理"],
+      "reason": "固定表达替换"
+    },
+    {
+      "text": "进行研究",
+      "pos": "v",
+      "replacements": ["开展研究"],
+      "reason": "固定表达替换"
+    },
+    {
+      "text": "进行调查",
+      "pos": "v",
+      "replacements": ["开展调查"],
+      "reason": "固定表达替换"
+    },
+    {
+      "text": "进行比较",
+      "pos": "v",
+      "replacements": ["加以比较"],
+      "reason": "固定表达替换"
+    },
+    {
+      "text": "进行讨论",
+      "pos": "v",
+      "replacements": ["展开讨论"],
+      "reason": "固定表达替换"
+    },
+    {
+      "text": "包含",
+      "pos": "v",
+      "replacements": ["包括"],
+      "reason": "高置信同义替换"
+    }
+  ]
+}

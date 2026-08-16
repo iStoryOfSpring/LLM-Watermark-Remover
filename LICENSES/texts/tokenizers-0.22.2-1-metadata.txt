@@ -1,0 +1,2 @@
+License metadata: UNKNOWN
+Project: Homepage, https://github.com/huggingface/tokenizers
