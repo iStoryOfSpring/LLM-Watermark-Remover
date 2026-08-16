@@ -2,7 +2,11 @@
 
 # 🧽 LLM Watermark Remover
 一个本地优先、文档保真、可审计的中文局部改写工具。macOS 发行版内嵌 Qwen3.5-2B，本地完成候选生成、保护、验证和导出，不需要安装 Python、Node.js，也不会在运行时联网下载模型。
-主要用于应对某些大厂宣称要对自己的AI添加水印。我的观点是，文字属于作者，不属于生成它的模型。
+主要用于应对某些大厂宣称要对自己的AI添加水印。**我的观点是，文字属于作者，不属于生成它的模型。**
+
+A local priority, document fidelity, auditable Chinese partial rewriting tool. The macOS distribution embeds Qwen3.5-2B, which completes candidate generation, protection, verification and export locally. There is no need to install Python and Node.js, and will not download the model online at runtime. It is mainly used to respond to some large factories' claims to add watermarks to their AI. 
+
+**My point is that the text belongs to the author, not to the model that generates it.**
 
 
 **Offline-first, document-faithful constrained rewriting workstation**
