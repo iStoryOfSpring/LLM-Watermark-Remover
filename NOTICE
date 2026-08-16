@@ -1,0 +1,9 @@
+LLM Watermark Remover
+Copyright 2026 Chen Siyu
+
+This product bundles third-party software and the Qwen3.5-2B model. Their
+copyright notices and license terms remain applicable and are listed in
+LICENSES/THIRD_PARTY_NOTICES.md and the accompanying LICENSES/texts directory.
+
+The Qwen3.5-2B model is distributed under Apache-2.0 by its upstream authors.
+The original model license and model card are included under model/Qwen3.5-2B.

@@ -1,0 +1,2 @@
+"""Protected span engine."""
+
