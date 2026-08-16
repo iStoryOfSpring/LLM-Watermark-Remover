@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 DMG_PATH="${1:-$ROOT_DIR/release/LLMWatermarkRemover-macos-arm64.dmg}"
-PART_SIZE="${RELEASE_DMG_PART_SIZE:-1900000000}"
+PART_SIZE="${RELEASE_DMG_PART_SIZE:-1000000000}"
 
 if [ ! -f "$DMG_PATH" ]; then
   echo "DMG not found: $DMG_PATH" >&2

@@ -75,12 +75,13 @@ The application is offline after the release files have been downloaded. The fir
 
 ### Install from a release
 
-The current package is published on the [GitHub Releases page](https://github.com/iStoryOfSpring/LLM-Watermark-Remover/releases). Because GitHub limits each release asset to less than 2 GiB, the DMG is published as three parts. Download all of these files into one directory:
+The current package is published on the [GitHub Releases page](https://github.com/iStoryOfSpring/LLM-Watermark-Remover/releases). Because GitHub limits each release asset to less than 2 GiB, the DMG is published as four parts. Download all of these files into one directory:
 
 ```text
 LLMWatermarkRemover-macos-arm64.dmg.part-aa
 LLMWatermarkRemover-macos-arm64.dmg.part-ab
 LLMWatermarkRemover-macos-arm64.dmg.part-ac
+LLMWatermarkRemover-macos-arm64.dmg.part-ad
 LLMWatermarkRemover-macos-arm64.parts.sha256
 LLMWatermarkRemover-macos-arm64.dmg.sha256
 ```
@@ -93,6 +94,7 @@ shasum -a 256 -c LLMWatermarkRemover-macos-arm64.parts.sha256
 cat LLMWatermarkRemover-macos-arm64.dmg.part-aa \
     LLMWatermarkRemover-macos-arm64.dmg.part-ab \
     LLMWatermarkRemover-macos-arm64.dmg.part-ac \
+    LLMWatermarkRemover-macos-arm64.dmg.part-ad \
     > LLMWatermarkRemover-macos-arm64.dmg
 
 shasum -a 256 -c LLMWatermarkRemover-macos-arm64.dmg.sha256
@@ -116,9 +118,9 @@ The application does not promise any third-party detector result. It provides co
 
 ### Why the DMG is split
 
-The full Qwen3.5-2B checkpoint is about 4.3 GB and the complete DMG is about 3.6 GiB. GitHub Releases allows a release to contain many assets, but each individual asset must be smaller than 2 GiB. The build therefore creates three binary parts instead of uploading one oversized DMG. See the [official GitHub release limits](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases).
+The full Qwen3.5-2B checkpoint is about 4.3 GB and the complete DMG is about 3.6 GiB. GitHub Releases allows a release to contain many assets, but each individual asset must be smaller than 2 GiB. The build therefore creates four shorter binary parts instead of uploading one oversized DMG. See the [official GitHub release limits](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases).
 
-Do not upload the unsplit `LLMWatermarkRemover-macos-arm64.dmg` to GitHub Releases. Upload the three `.part-*` files and both checksum files. The parts are not separate applications; they must be concatenated in alphabetical order before opening the DMG.
+Do not upload the unsplit `LLMWatermarkRemover-macos-arm64.dmg` to GitHub Releases. Upload the four `.part-*` files and both checksum files. The parts are not separate applications; they must be concatenated in alphabetical order before opening the DMG.
 
 ### Publish the generated assets
 
@@ -128,6 +130,7 @@ After building on an Apple Silicon Mac, upload these files from `release/` to th
 LLMWatermarkRemover-macos-arm64.dmg.part-aa
 LLMWatermarkRemover-macos-arm64.dmg.part-ab
 LLMWatermarkRemover-macos-arm64.dmg.part-ac
+LLMWatermarkRemover-macos-arm64.dmg.part-ad
 LLMWatermarkRemover-macos-arm64.parts.sha256
 LLMWatermarkRemover-macos-arm64.dmg.sha256
 ```
@@ -240,6 +243,7 @@ release/LLMWatermarkRemover-macos-arm64.dmg
 release/LLMWatermarkRemover-macos-arm64.dmg.part-aa
 release/LLMWatermarkRemover-macos-arm64.dmg.part-ab
 release/LLMWatermarkRemover-macos-arm64.dmg.part-ac
+release/LLMWatermarkRemover-macos-arm64.dmg.part-ad
 release/LLMWatermarkRemover-macos-arm64.dmg.sha256
 release/LLMWatermarkRemover-macos-arm64.parts.sha256
 ```
@@ -250,7 +254,7 @@ If a DMG already exists and only the release assets need to be regenerated:
 ./scripts/split-release-dmg.sh release/LLMWatermarkRemover-macos-arm64.dmg
 ```
 
-The split size defaults to 1,900,000,000 bytes so every part stays safely below GitHub's 2 GiB per-file limit. Override it only with another value below 2,147,483,648:
+The split size defaults to 1,000,000,000 bytes so every part stays safely below GitHub's 2 GiB per-file limit and large uploads are less likely to time out. Override it only with another value below 2,147,483,648:
 
 ```bash
 RELEASE_DMG_PART_SIZE=1800000000 \
@@ -398,11 +402,12 @@ Each project above retains its own license; see [LICENSES/THIRD_PARTY_NOTICES.md
 LLMWatermarkRemover-macos-arm64.dmg.part-aa
 LLMWatermarkRemover-macos-arm64.dmg.part-ab
 LLMWatermarkRemover-macos-arm64.dmg.part-ac
+LLMWatermarkRemover-macos-arm64.dmg.part-ad
 LLMWatermarkRemover-macos-arm64.parts.sha256
 LLMWatermarkRemover-macos-arm64.dmg.sha256
 ```
 
-GitHub 单个 Release 附件不能超过 2 GiB，而完整 DMG 约 3.6 GiB，所以 DMG 被拆成三个分卷。先验证分卷，再合并和验证完整 DMG：
+GitHub 单个 Release 附件不能超过 2 GiB，而完整 DMG 约 3.6 GiB，所以 DMG 被拆成四个更短的分卷。先验证分卷，再合并和验证完整 DMG：
 
 ```bash
 shasum -a 256 -c LLMWatermarkRemover-macos-arm64.parts.sha256
@@ -410,6 +415,7 @@ shasum -a 256 -c LLMWatermarkRemover-macos-arm64.parts.sha256
 cat LLMWatermarkRemover-macos-arm64.dmg.part-aa \
     LLMWatermarkRemover-macos-arm64.dmg.part-ab \
     LLMWatermarkRemover-macos-arm64.dmg.part-ac \
+    LLMWatermarkRemover-macos-arm64.dmg.part-ad \
     > LLMWatermarkRemover-macos-arm64.dmg
 
 shasum -a 256 -c LLMWatermarkRemover-macos-arm64.dmg.sha256
@@ -433,9 +439,9 @@ shasum -a 256 -c LLMWatermarkRemover-macos-arm64.dmg.sha256
 
 ### 为什么要拆分 DMG
 
-完整 Qwen3.5-2B 权重约 4.3 GB，最终 DMG 约 3.6 GiB。GitHub Releases 允许一个 Release 包含多个附件，但每个附件必须小于 2 GiB。因此构建脚本会自动生成三个分卷，而不是上传一个超大 DMG。详见 [GitHub 官方 Release 限制](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases)。
+完整 Qwen3.5-2B 权重约 4.3 GB，最终 DMG 约 3.6 GiB。GitHub Releases 允许一个 Release 包含多个附件，但每个附件必须小于 2 GiB。因此构建脚本会自动生成四个更短的分卷，而不是上传一个超大 DMG。详见 [GitHub 官方 Release 限制](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases)。
 
-不要把未拆分的 `LLMWatermarkRemover-macos-arm64.dmg` 上传到 GitHub Release。应上传三个 `.part-*` 文件和两个校验文件。分卷不是三个独立应用，必须按字母顺序合并后才能打开。
+不要把未拆分的 `LLMWatermarkRemover-macos-arm64.dmg` 上传到 GitHub Release。应上传四个 `.part-*` 文件和两个校验文件。分卷不是四个独立应用，必须按字母顺序合并后才能打开。
 
 ### 发布时上传的文件
 
@@ -445,6 +451,7 @@ shasum -a 256 -c LLMWatermarkRemover-macos-arm64.dmg.sha256
 LLMWatermarkRemover-macos-arm64.dmg.part-aa
 LLMWatermarkRemover-macos-arm64.dmg.part-ab
 LLMWatermarkRemover-macos-arm64.dmg.part-ac
+LLMWatermarkRemover-macos-arm64.dmg.part-ad
 LLMWatermarkRemover-macos-arm64.parts.sha256
 LLMWatermarkRemover-macos-arm64.dmg.sha256
 ```
@@ -557,6 +564,7 @@ release/LLMWatermarkRemover-macos-arm64.dmg
 release/LLMWatermarkRemover-macos-arm64.dmg.part-aa
 release/LLMWatermarkRemover-macos-arm64.dmg.part-ab
 release/LLMWatermarkRemover-macos-arm64.dmg.part-ac
+release/LLMWatermarkRemover-macos-arm64.dmg.part-ad
 release/LLMWatermarkRemover-macos-arm64.dmg.sha256
 release/LLMWatermarkRemover-macos-arm64.parts.sha256
 ```
@@ -567,7 +575,7 @@ release/LLMWatermarkRemover-macos-arm64.parts.sha256
 ./scripts/split-release-dmg.sh release/LLMWatermarkRemover-macos-arm64.dmg
 ```
 
-分卷大小默认为 1,900,000,000 字节，确保每个文件安全低于 GitHub 的 2 GiB 限制。如需调整，必须保持小于 2,147,483,648：
+分卷大小默认为 1,000,000,000 字节，确保每个文件安全低于 GitHub 的 2 GiB 限制，也降低长时间上传中断的概率。如需调整，必须保持小于 2,147,483,648：
 
 ```bash
 RELEASE_DMG_PART_SIZE=1800000000 \
@@ -640,6 +648,6 @@ python scripts/generate-licenses.py
 - 新增 TXT/DOCX 审阅与导出流程、保护区域和 Fail Closed 验证。
 - 新增 PNG、ICNS、ICO 软件图标。
 - 新增 Apache-2.0、NOTICE、完整第三方归属、模型许可证和发行 SHA-256 清单。
-- 新增自动 DMG 分卷，解决 GitHub Releases 单附件不能超过 2 GiB 的限制。
+- 新增自动 DMG 分卷，解决 GitHub Releases 单附件不能超过 2 GiB 的限制；默认拆为四个更短分卷。
 
 项目主页：[github.com/iStoryOfSpring/LLM-Watermark-Remover](https://github.com/iStoryOfSpring/LLM-Watermark-Remover)
