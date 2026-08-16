@@ -101,6 +101,6 @@ if [ -n "${NOTARY_PROFILE:-}" ]; then
   xcrun stapler staple "$DMG_PATH"
 fi
 
-shasum -a 256 "$DMG_PATH" > "$DMG_PATH.sha256"
+"$ROOT_DIR/scripts/split-release-dmg.sh" "$DMG_PATH"
 echo "Built: $APP_DIR"
 echo "Built: $DMG_PATH"
