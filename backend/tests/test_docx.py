@@ -7,6 +7,7 @@ from backend.app.core.models import DecisionEnvelope, SentenceContext
 from backend.app.document.docx import DocxAdapter
 from backend.app.rewrite.runtime import ModelRuntime
 from backend.app.service.rewrite_service import RewriteService
+from backend.tests.fakes import fake_semantic_validator
 
 
 class ReplaceRuntime(ModelRuntime):
@@ -44,7 +45,10 @@ def test_docx_patches_body_text_only_and_keeps_other_parts(tmp_path: Path) -> No
     with ZipFile(source) as archive:
         original_parts = {name: archive.read(name) for name in archive.namelist() if name != "word/document.xml"}
 
-    result = RewriteService(runtime=ReplaceRuntime()).rewrite_file(source, job_dir=tmp_path / "job")
+    result = RewriteService(
+        runtime=ReplaceRuntime(),
+        semantic=fake_semantic_validator(),
+    ).rewrite_file(source, job_dir=tmp_path / "job")
     assert result.success is True
     assert result.audit.changed == 1
     assert result.audit.protected >= 2
@@ -57,4 +61,3 @@ def test_docx_patches_body_text_only_and_keeps_other_parts(tmp_path: Path) -> No
     with ZipFile(output) as archive:
         for name, original_bytes in original_parts.items():
             assert archive.read(name) == original_bytes
-

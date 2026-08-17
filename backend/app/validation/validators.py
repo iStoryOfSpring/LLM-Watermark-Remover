@@ -15,7 +15,8 @@ from backend.app.core.models import (
     SentenceContext,
 )
 from backend.app.protection.engine import ProtectedSpanEngine
-from backend.app.validation.semantic import SemanticValidator
+from backend.app.semantic.base import SemanticEvidence
+from backend.app.semantic.validator import SemanticEquivalenceValidator
 
 
 _SENSITIVE_TOKEN_RE = re.compile(
@@ -48,10 +49,10 @@ class SentenceValidationOutcome:
 class ProposalValidator:
     def __init__(
         self,
-        semantic: SemanticValidator | None = None,
+        semantic: SemanticEquivalenceValidator,
         span_engine: ProtectedSpanEngine | None = None,
     ):
-        self.semantic = semantic or SemanticValidator()
+        self.semantic = semantic
         self.span_engine = span_engine or ProtectedSpanEngine()
 
     @staticmethod
@@ -158,10 +159,10 @@ class ProposalValidator:
                     self._reject(candidate, replacement, "受保护词未在改写句中完整保留", "protected_term_validator")
                 )
                 continue
-            ok, score, semantic_reason = self.semantic.validate(context.text, rewritten_sentence)
-            if not ok:
+            evidence = self.semantic.validate(context.text, rewritten_sentence)
+            if not evidence.passed:
                 outcome.rejected.append(
-                    self._reject(candidate, replacement, semantic_reason, "semantic_validator")
+                    self._reject(candidate, replacement, evidence.reason, "semantic_validator")
                 )
                 continue
             outcome.patches.append(
@@ -174,14 +175,17 @@ class ProposalValidator:
                     original=candidate.text,
                     replacement=replacement,
                     reason=decision.reason or candidate.reason,
-                    similarity=score,
+                    similarity=evidence.embedding_similarity,
+                    semantic_evidence=evidence,
                     validation_trace=[
                         "schema:pass",
                         "span:pass",
                         "protected:pass",
                         "number_entity:pass",
                         "layout:pass",
-                        "semantic:pass",
+                        "embedding:pass",
+                        "nli_forward:pass",
+                        "nli_reverse:pass",
                     ],
                 )
             )
@@ -314,15 +318,15 @@ class ProposalValidator:
             )
             return outcome
 
-        ok, score, semantic_reason = self.semantic.validate(context.text, replacement)
-        if not ok:
+        evidence = self.semantic.validate(context.text, replacement)
+        if not evidence.passed:
             outcome.rejected.append(
                 RejectedProposal(
                     candidate_id=context.sentence_id,
                     unit_id=context.unit_id,
                     original=context.text,
                     replacement=replacement,
-                    reason=semantic_reason,
+                    reason=evidence.reason,
                     stage="semantic_validator",
                 )
             )
@@ -359,14 +363,17 @@ class ProposalValidator:
                     reason=decision.reason or "受约束句子改写",
                     kind="sentence",
                     source_sentence=context.text,
-                    similarity=score,
+                    similarity=evidence.embedding_similarity,
+                    semantic_evidence=evidence,
                     validation_trace=[
                         "schema:pass",
                         "structure:pass",
                         "protected:pass",
                         "number_entity:pass",
                         "layout:pass",
-                        "semantic:pass",
+                        "embedding:pass",
+                        "nli_forward:pass",
+                        "nli_reverse:pass",
                     ],
                 )
             )
@@ -389,7 +396,7 @@ def _apply_local_patches(text: str, patches: list[Patch]) -> str:
 def validate_paragraph_semantics(
     original: str,
     patches: list[Patch],
-    semantic: SemanticValidator,
-) -> tuple[bool, float, str]:
+    semantic: SemanticEquivalenceValidator,
+) -> SemanticEvidence:
     rewritten = _apply_local_patches(original, patches)
-    return semantic.validate(original, rewritten, paragraph=True)
+    return semantic.validate(original, rewritten)

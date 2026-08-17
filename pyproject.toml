@@ -31,9 +31,6 @@ dev = [
 local-llm = [
   "torch>=2.6",
 ]
-semantic = [
-  "onnxruntime>=1.18",
-]
 
 [project.scripts]
 local-rewrite = "backend.app.cli:main"
@@ -48,3 +45,6 @@ include = ["backend*"]
 [tool.pytest.ini_options]
 testpaths = ["backend/tests"]
 pythonpath = ["."]
+markers = [
+  "model: requires the local model assets and is skipped unless explicitly enabled",
+]

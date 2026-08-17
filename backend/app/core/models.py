@@ -5,6 +5,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from backend.app.semantic.base import SemanticEvidence
+
 
 class DocumentFormat(str, Enum):
     TXT = "txt"
@@ -187,6 +189,7 @@ class Patch(BaseModel):
     kind: Literal["lexical", "sentence"] = "lexical"
     source_sentence: str | None = None
     similarity: float | None = None
+    semantic_evidence: SemanticEvidence | None = None
     validation_trace: list[str] = Field(default_factory=list)
     accepted: bool = True
 
@@ -205,7 +208,7 @@ class RejectedProposal(BaseModel):
 class AuditReport(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    schema_version: Literal["1.0", "1.1"] = "1.1"
+    schema_version: Literal["1.0", "1.1", "1.2"] = "1.2"
     job_id: str
     document_id: str
     format: DocumentFormat
