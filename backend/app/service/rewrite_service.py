@@ -28,7 +28,9 @@ from backend.app.protection.engine import ProtectedSpanEngine
 from backend.app.rewrite.candidates import CandidateSelector
 from backend.app.rewrite.parser import ModelJsonError
 from backend.app.rewrite.runtime import ModelRuntime, ModelUnavailable, build_runtime
-from backend.app.validation.semantic import SemanticValidator
+from backend.app.semantic.embedding import BGEChineseEmbeddingBackend
+from backend.app.semantic.nli import ErlangshenNLIBackend
+from backend.app.semantic.validator import SemanticEquivalenceValidator
 from backend.app.validation.validators import ProposalValidator, validate_paragraph_semantics
 
 
@@ -42,25 +44,51 @@ def adapter_for_path(path: Path) -> DocumentAdapter:
 
 
 class RewriteService:
-    def __init__(self, runtime: ModelRuntime | None = None):
+    def __init__(
+        self,
+        runtime: ModelRuntime | None = None,
+        semantic: SemanticEquivalenceValidator | None = None,
+    ):
         self.analyzer = LinguisticAnalyzer()
         self.span_engine = ProtectedSpanEngine()
         self.selector = CandidateSelector(self.analyzer, self.span_engine)
-        self.semantic = SemanticValidator(
-            threshold=settings.semantic_threshold,
-            paragraph_threshold=settings.paragraph_semantic_threshold,
-            model_path=settings.semantic_model_path,
-            tokenizer_path=settings.semantic_tokenizer_path,
-            allow_fallback=settings.allow_semantic_fallback,
+        self.semantic = semantic or SemanticEquivalenceValidator(
+            BGEChineseEmbeddingBackend(
+                settings.semantic_embedding_model_path,
+                device=settings.semantic_device,
+                batch_size=settings.semantic_batch_size,
+            ),
+            ErlangshenNLIBackend(
+                settings.semantic_nli_model_path,
+                device=settings.semantic_device,
+                batch_size=settings.semantic_batch_size,
+            ),
+            embedding_threshold=settings.semantic_embedding_threshold,
+            entailment_threshold=settings.semantic_nli_entailment_threshold,
+            contradiction_ceiling=settings.semantic_nli_contradiction_ceiling,
+            timeout_seconds=settings.model_timeout_seconds,
+            require_bidirectional_nli=settings.semantic_require_bidirectional_nli,
+            fallback_policy=settings.semantic_fallback_policy,
         )
         self.validator = ProposalValidator(self.semantic, self.span_engine)
         self.runtime = runtime or build_runtime()
         self._job_dirs: dict[str, Path] = {}
 
     def model_status(self) -> dict[str, Any]:
+        runtime_status = self.runtime.status()
         return {
-            **self.runtime.status(),
+            **runtime_status,
+            "rewrite": runtime_status,
+            "embedding": self.semantic.embedding.status(),
+            "nli": self.semantic.nli.status(),
             "semantic_validator": self.semantic.mode,
+            "semantic_fallback_policy": self.semantic.fallback_policy,
+            "semantic_thresholds": {
+                "embedding": settings.semantic_embedding_threshold,
+                "entailment": settings.semantic_nli_entailment_threshold,
+                "contradiction_ceiling": settings.semantic_nli_contradiction_ceiling,
+                "notice": "DEVELOPMENT DEFAULT - NOT CALIBRATED",
+            },
             "source_scope": "body_direct_paragraphs_only_for_docx",
             "rewrite_granularity": "lexical_default_sentence_opt_in",
             "failure_policy": "fail_closed",
@@ -258,10 +286,15 @@ class RewriteService:
                 continue
             unit = unit_by_id[unit_id]
             try:
-                ok, score, reason = validate_paragraph_semantics(unit.text, current, self.semantic)
+                paragraph_evidence = validate_paragraph_semantics(
+                    unit.text, current, self.semantic
+                )
             except Exception as exc:
-                ok, score, reason = False, 0.0, f"paragraph patch 校验失败: {exc}"
-            if not ok:
+                paragraph_evidence = None
+                reason = f"paragraph patch 校验失败: {exc}"
+            else:
+                reason = paragraph_evidence.reason
+            if paragraph_evidence is None or not paragraph_evidence.passed:
                 warnings.append(f"{unit_id}: 段落级语义校验失败，整段 patch 丢弃。{reason}")
                 rejected.extend(
                     RejectedProposal(
@@ -279,8 +312,10 @@ class RewriteService:
                 patch.model_copy(
                     update={
                         "similarity": min(
-                            score,
-                            patch.similarity if patch.similarity is not None else score,
+                            paragraph_evidence.embedding_similarity or 0.0,
+                            patch.similarity
+                            if patch.similarity is not None
+                            else paragraph_evidence.embedding_similarity or 0.0,
                         ),
                         "validation_trace": [*patch.validation_trace, "paragraph_semantic:pass"],
                     }

@@ -65,6 +65,10 @@ def _env_float(name: str, key: str, default: float) -> float:
     return float(os.getenv(name, str(_config_value(key, default))))
 
 
+def _env_int(name: str, key: str, default: int) -> int:
+    return int(os.getenv(name, str(_config_value(key, default))))
+
+
 @dataclass(frozen=True)
 class Settings:
     resource_root: Path = RESOURCE_ROOT
@@ -73,21 +77,40 @@ class Settings:
     model_path: Path = _path_setting(
         os.getenv("LOCAL_REWRITE_MODEL_PATH", str(_config_value("model_path", DEFAULT_MODEL_PATH)))
     )
-    semantic_model_path: Path = _path_setting(
+    semantic_embedding_model_path: Path = _path_setting(
         os.getenv(
-            "LOCAL_REWRITE_SEMANTIC_MODEL_PATH",
-            str(_config_value("semantic_model_path", RESOURCE_ROOT / "model" / "embedding" / "model.onnx")),
+            "LOCAL_REWRITE_SEMANTIC_EMBEDDING_MODEL_PATH",
+            str(
+                _config_value(
+                    "semantic_embedding_model_path",
+                    RESOURCE_ROOT / "model" / "bge-small-zh-v1.5",
+                )
+            ),
         )
     )
-    semantic_tokenizer_path: Path = _path_setting(
+    semantic_nli_model_path: Path = _path_setting(
         os.getenv(
-            "LOCAL_REWRITE_SEMANTIC_TOKENIZER_PATH",
-            str(_config_value("semantic_tokenizer_path", RESOURCE_ROOT / "model" / "embedding")),
+            "LOCAL_REWRITE_SEMANTIC_NLI_MODEL_PATH",
+            str(
+                _config_value(
+                    "semantic_nli_model_path",
+                    RESOURCE_ROOT / "model" / "Erlangshen-RoBERTa-110M-NLI",
+                )
+            ),
         )
     )
-    allow_semantic_fallback: bool = _env_bool(
-        "LOCAL_REWRITE_ALLOW_SEMANTIC_FALLBACK",
-        bool(_config_value("allow_semantic_fallback", True)),
+    semantic_device: str = os.getenv(
+        "LOCAL_REWRITE_SEMANTIC_DEVICE",
+        str(_config_value("semantic_device", "cpu")),
+    )
+    semantic_batch_size: int = _env_int(
+        "LOCAL_REWRITE_SEMANTIC_BATCH_SIZE",
+        "semantic_batch_size",
+        16,
+    )
+    semantic_fallback_policy: str = os.getenv(
+        "LOCAL_REWRITE_SEMANTIC_FALLBACK_POLICY",
+        str(_config_value("semantic_fallback_policy", "reject")),
     )
     job_root: Path = DATA_ROOT / "jobs"
     dictionary_root: Path = DATA_ROOT / "user-dictionaries"
@@ -102,11 +125,25 @@ class Settings:
         "LOCAL_REWRITE_LOAD_MODEL_ON_STARTUP",
         bool(_config_value("load_model_on_startup", False)),
     )
-    semantic_threshold: float = _env_float("LOCAL_REWRITE_SEMANTIC_THRESHOLD", "semantic_threshold", 0.86)
-    paragraph_semantic_threshold: float = _env_float(
-        "LOCAL_REWRITE_PARAGRAPH_SEMANTIC_THRESHOLD",
-        "paragraph_semantic_threshold",
-        0.84,
+    # Development defaults only. Release values must come from calibration data.
+    semantic_embedding_threshold: float = _env_float(
+        "LOCAL_REWRITE_SEMANTIC_EMBEDDING_THRESHOLD",
+        "semantic_embedding_threshold",
+        0.85,
+    )
+    semantic_nli_entailment_threshold: float = _env_float(
+        "LOCAL_REWRITE_SEMANTIC_NLI_ENTAILMENT_THRESHOLD",
+        "semantic_nli_entailment_threshold",
+        0.70,
+    )
+    semantic_nli_contradiction_ceiling: float = _env_float(
+        "LOCAL_REWRITE_SEMANTIC_NLI_CONTRADICTION_CEILING",
+        "semantic_nli_contradiction_ceiling",
+        0.10,
+    )
+    semantic_require_bidirectional_nli: bool = _env_bool(
+        "LOCAL_REWRITE_SEMANTIC_REQUIRE_BIDIRECTIONAL_NLI",
+        bool(_config_value("semantic_require_bidirectional_nli", True)),
     )
     model_timeout_seconds: float = _env_float("LOCAL_REWRITE_MODEL_TIMEOUT", "model_timeout_seconds", 180.0)
 

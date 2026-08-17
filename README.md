@@ -57,8 +57,9 @@ English | [简体中文](#简体中文)
 
 - Qwen only proposes `KEEP` or `REPLACE` candidates; it cannot write directly into a document.
 - Numeric, entity, logic, semantic, and layout checks run before a candidate is accepted.
+- Semantic validation uses local BGE CLS embeddings followed by forward and reverse Erlangshen NLI.
 - An uncertain validation result keeps the original text and records the reason for review.
-- The current repository does not ship an ONNX embedding model. Semantic checks use the deterministic n-gram fallback until an ONNX model is added and licensed.
+- Missing or failed semantic models reject the candidate. Surface n-gram similarity remains diagnostic-only and is never reported as full semantic validation.
 
 ### 4. Auditable offline data path
 
@@ -155,7 +156,7 @@ LLM-Watermark-Remover/
 │   └── tests/                       # Backend tests and fixtures
 ├── config/                          # Default runtime configuration
 ├── frontend/                        # React + Vite user interface
-├── model/Qwen3.5-2B/                # Model card and license; weights stay local
+├── model/                           # Local Qwen, BGE, and Erlangshen model assets
 ├── packaging/                       # PyInstaller, Swift shell, Info.plist
 ├── scripts/                         # Build, license, icon, manifest, split scripts
 ├── LICENSE                          # Apache License 2.0 for project code
@@ -188,8 +189,11 @@ The development server preserves these environment variables for testing and loc
 
 ```bash
 export LOCAL_REWRITE_MODEL_PATH="/path/to/Qwen3.5-2B"
+export LOCAL_REWRITE_SEMANTIC_EMBEDDING_MODEL_PATH="/path/to/bge-small-zh-v1.5"
+export LOCAL_REWRITE_SEMANTIC_NLI_MODEL_PATH="/path/to/Erlangshen-RoBERTa-110M-NLI"
 export LOCAL_REWRITE_DATA_DIR="/path/to/local-data"
-export LOCAL_REWRITE_ALLOW_SEMANTIC_FALLBACK=true
+export LOCAL_REWRITE_SEMANTIC_DEVICE="cpu"
+export LOCAL_REWRITE_SEMANTIC_FALLBACK_POLICY="reject"
 ```
 
 The packaged build uses `local_files_only=True` and never downloads the model at runtime.
@@ -284,9 +288,13 @@ Without a signing identity, the result is intended for local testing only.
 
 ```bash
 pytest -q
+LOCAL_REWRITE_RUN_MODEL_TESTS=1 pytest -m model
 cd frontend && npm run build
 python3 -m compileall -q backend scripts
 ```
+
+The semantic thresholds in `config/default.json` are development defaults and
+are not calibrated release thresholds.
 
 Release validation should also confirm that the application launches without Python or Node.js installed, Qwen does not trigger a network download, TXT/DOCX import and export work, the backend exits when the window closes, and the reconstructed DMG checksum matches.
 
